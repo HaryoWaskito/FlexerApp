@@ -1,0 +1,5 @@
+D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.csprojResolveAssemblyReference.cache
+D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.FlexerApp.resources
+D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.Properties.Resources.resources
+D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.csproj.GenerateResource.Cache
+D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.csproj.CoreCompileInputs.cache
