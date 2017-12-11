@@ -8,17 +8,17 @@ namespace FlexerApp.Controllers
     {
         public string LocationType;
         public string PrivateIP = Dns.GetHostEntry(Dns.GetHostName()).AddressList[1].ToString();
-        public string PublicIP;
-        public string CountryCode;
-        public string CountryName;
-        public string RegionCode;
-        public string RegionName;
-        public string City;
-        public string ZipCode;
-        public string TimeZone;
-        public long GMT;
-        public float Latitude;
-        public float Longitude;        
+        public string PublicIP = string.Empty;
+        public string CountryCode = string.Empty;
+        public string CountryName = string.Empty;
+        public string RegionCode = string.Empty;
+        public string RegionName = string.Empty;
+        public string City = string.Empty;
+        public string ZipCode = string.Empty;
+        public string TimeZone = string.Empty;
+        public decimal GMT = 0.00M;
+        public decimal Latitude = 0.00M;
+        public decimal Longitude = 0.00M;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Locator"/> class.
@@ -27,7 +27,7 @@ namespace FlexerApp.Controllers
         {
             GetPublicIP();
             GetTimeZone();
-            GetGMT();            
+            GetGMT();
         }
 
         /// <summary>
@@ -36,16 +36,16 @@ namespace FlexerApp.Controllers
         /// <returns></returns>
         private void GetPublicIP()
         {
-            string url = "http://checkip.dyndns.org";
-            WebRequest req = WebRequest.Create(url);
-            WebResponse resp = req.GetResponse();
-            System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
-            string response = sr.ReadToEnd().Trim();
-            string[] a = response.Split(':');
-            string a2 = a[1].Substring(1);
-            string[] a3 = a2.Split('<');
-            string a4 = a3[0];
-            PublicIP = a4;
+            //string url = "http://checkip.dyndns.org";
+            //WebRequest req = WebRequest.Create(url);            
+            //WebResponse resp = req.GetResponse();
+            //System.IO.StreamReader sr = new System.IO.StreamReader(resp.GetResponseStream());
+            //string response = sr.ReadToEnd().Trim();
+            //string[] a = response.Split(':');
+            //string a2 = a[1].Substring(1);
+            //string[] a3 = a2.Split('<');
+            //string a4 = a3[0];
+            //PublicIP = a4;            
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace FlexerApp.Controllers
         /// </summary>
         private void GetGMT()
         {
-            GMT = 0;
+            GMT = 8.00M;
         }
 
         /// <summary>

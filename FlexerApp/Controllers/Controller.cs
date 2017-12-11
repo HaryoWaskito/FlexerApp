@@ -1,101 +1,294 @@
 ﻿using FlexerApp.Contexts;
 using FlexerApp.Models;
+using Gma.System.MouseKeyHook;
 using RestSharp;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Timers;
+using System.Windows.Forms;
 
 namespace FlexerApp.Controllers
 {
     public class Controller
     {
-        private const string API_URL = "http://52.163.112.40:2345";
-        private const string DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+        private const string ACTIVITY_TYPE_APPLICATION = "Application";
+        private const string ACTIVITY_TYPE_URL = "URL";
 
-        /// <summary>
-        /// The context database
-        /// </summary>
+        private const int CaptureImageInterval = 30000;
+        private const int UploadDataInterval = 30000;
+
+        public Stopwatch stopwatch;
+        public DateTime loginTime;
+
+        private System.Timers.Timer captureImageTimer;
+        private System.Timers.Timer uploadDataTimer;
+
+        static readonly object captureLock = new object();
+        static readonly object uploadLock = new object();
+
         private Context _contextDB = new Context();
+        private IKeyboardMouseEvents m_Events;
+        private List<KeyboardMouseLogModel> keyboardMouseLogList = new List<KeyboardMouseLogModel>();
 
         /// <summary>
-        /// Logins to server.
+        /// Begins the watching.
         /// </summary>
-        /// <param name="login">The login.</param>
-        /// <returns></returns>
-        public bool LoginToServer(LoginModel login)
+        public void BeginWatching()
         {
-            bool isSuccessLogin = false;
+            Unsubscribe();
+            Subscribe(Hook.GlobalEvents());
+
+            while (true)
+            {
+                Thread captureImageThread = new Thread(new ThreadStart(CaptureImageTimer));
+                captureImageThread.Start();
+
+                Thread uploadDataThread = new Thread(new ThreadStart(UploadDataTimer));
+                uploadDataThread.Start();
+            }
+        }
+
+        /// <summary>
+        /// Hooks the manager screenshot timer.
+        /// </summary>
+        private void CaptureImageTimer()
+        {
+            lock (captureLock)
+            {
+                captureImageTimer = new System.Timers.Timer(CaptureImageInterval);
+                captureImageTimer.Elapsed += new ElapsedEventHandler(CaptureImageTimerElapsed);
+                captureImageTimer.Enabled = true;
+                Thread.Sleep(1000);
+            }
+        }
+
+        /// <summary>
+        /// Sends the data to server timer.
+        /// </summary>
+        private void UploadDataTimer()
+        {
+            lock (uploadLock)
+            {
+                uploadDataTimer = new System.Timers.Timer(UploadDataInterval);
+                uploadDataTimer.Elapsed += new ElapsedEventHandler(UploadDataTimerElapsed);
+                uploadDataTimer.Enabled = true;
+                Thread.Sleep(1000);
+            }
+        }
+
+        /// <summary>
+        /// Subscribes the specified events.
+        /// </summary>
+        /// <param name="events">The events.</param>
+        private void Subscribe(IKeyboardMouseEvents events)
+        {
+            m_Events = events;
+            m_Events.KeyPress += HookManager_KeyPress;
+            m_Events.MouseClick += HookManager_MouseClick;
+        }
+
+        /// <summary>
+        /// Unsubscribes this instance.
+        /// </summary>
+        private void Unsubscribe()
+        {
+            if (m_Events == null) return;
+
+            m_Events.KeyPress -= HookManager_KeyPress;
+            m_Events.MouseClick -= HookManager_MouseClick;
+            m_Events.Dispose();
+            m_Events = null;
+        }
+
+        /// <summary>
+        /// Handles the TimerElapsed event of the HookManager_ScreenShot control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Timers.ElapsedEventArgs"/> instance containing the event data.</param>
+        private void CaptureImageTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            HookManager_Screenshot();
+        }
+
+        /// <summary>
+        /// Uploads the data timer elapsed.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.Timers.ElapsedEventArgs"/> instance containing the event data.</param>
+        private void UploadDataTimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            var connector = new Connector();
+            connector.SendKeyLogDataToServer();
+            connector.SendLocalImageDataToServer();
+        }
+
+
+        /// <summary>
+        /// Hooks the manager screenshot.
+        /// </summary>
+        private void HookManager_Screenshot()
+        {
+            Int32 hwnd = 0;
+            hwnd = GetForegroundWindow();
+
+            var sessionID = _contextDB.GetLoginSession().sessionID;
+
+            if (hwnd == 0)
+                return;
+
+            string appProcessName = Process.GetProcessById(GetWindowProcessID(hwnd)).ProcessName;
+
+            var capture = new ScreenshotLogModel();
+            capture.ScreenshotLogModelId = Guid.NewGuid().ToString();
+            capture.SessionID = sessionID;
+            capture.ActivityName = appProcessName;
+            capture.ActivityType = "Application"; //Sementara dipantek!
+            capture.Image = new ScreenCapture().CaptureScreenByteArrayString(System.Drawing.Imaging.ImageFormat.Jpeg);
+            capture.CaptureScreenDate = loginTime.AddTicks(stopwatch.ElapsedTicks);
+            capture.IsSuccessSendToServer = false;
+
+            _contextDB.CreateImageData(capture);
+        }
+
+        /// <summary>
+        /// Handles the KeyPress event of the HookManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="KeyPressEventArgs"/> instance containing the event data.</param>
+        private void HookManager_KeyPress(object sender, KeyPressEventArgs e)
+        {
             try
             {
-                var requestBody = new StringBuilder();
-                var client = new RestClient(string.Format("{0}/login", API_URL));
-                var request = new RestRequest(Method.POST);
+                Int32 hwnd = 0;
+                hwnd = GetForegroundWindow();
 
-                request.AddHeader("cache-control", "no-cache");
-                request.AddHeader("content-type", "application/x-www-form-urlencoded");
+                var sessionID = _contextDB.GetLoginSession().sessionID;
 
-                requestBody.AppendFormat("\"Email\" : \"{0}\",", login.Email);
-                requestBody.AppendFormat("\"Password\" : \"{0}\",", login.Password);
-                requestBody.AppendFormat("\"LocationType\" : \"{0}\",", login.LocationType);
-                requestBody.AppendFormat("\"IPAddress\" : \"{0}\",", login.IPAddress);
-                requestBody.AppendFormat("\"City\" : \"{0}\",", login.City);
-                requestBody.AppendFormat("\"Lat\" : {0},", login.Lat);
-                requestBody.AppendFormat("\"Long\" : {0},", login.Long);
-                requestBody.AppendFormat("\"gmtdiff\" : {0},", login.GMTDiff);
-                requestBody.AppendFormat("\"clienttime\" : \"{0}\"", login.LoginDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                if (hwnd == 0)
+                    return;
 
-                request.AddParameter("application/json", string.Concat("{", requestBody.ToString(), "}"), ParameterType.RequestBody);
+                string appProcessName = Process.GetProcessById(GetWindowProcessID(hwnd)).ProcessName;
 
-                IRestResponse response = client.Execute(request);
-                isSuccessLogin = response.StatusCode.ToString() == "OK" ? true : false;
-
-                if (isSuccessLogin)
+                if (keyboardMouseLogList.Exists(monitor => monitor.ActivityName == appProcessName))
                 {
-                    var responseList = response.Content.Split(',').ToList();
-                    login.sessionID = Convert.ToInt32(responseList[1].Split(':')[1]);
-                    login.loginToken = responseList[3].Split(':')[1].Substring(1, responseList[3].Split(':')[1].Length - 3);
+                    var monitor = keyboardMouseLogList.Where(a => a.ActivityName == appProcessName).OrderByDescending(b => b.StartTime).FirstOrDefault();
+                    monitor.KeyStrokeCount++;
+                    monitor.InputKey = string.Concat(monitor.InputKey, e.KeyChar.ToString());
+                    monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
+                }
+                else
+                {
+                    if (keyboardMouseLogList.Count > 0)
+                    {
+                        foreach (var log in keyboardMouseLogList)
+                            _contextDB.CreateData(log);
 
-                    _contextDB.CreateLoginSession(login);
+                        keyboardMouseLogList = new List<KeyboardMouseLogModel>();
+                    }
+
+                    var monitor = new KeyboardMouseLogModel();
+                    monitor.KeyboardMouseLogModelId = Guid.NewGuid().ToString();
+                    monitor.SessionID = sessionID;
+                    monitor.ActivityName = appProcessName;
+                    monitor.ActivityType = ACTIVITY_TYPE_APPLICATION;
+                    monitor.InputKey = e.KeyChar.ToString();
+                    monitor.KeyStrokeCount = 1;
+                    monitor.MouseClickCount = 0;
+                    monitor.StartTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
+                    monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
+                    monitor.IsSuccessSendToServer = false;
+
+                    keyboardMouseLogList.Add(monitor);
                 }
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-
-            return isSuccessLogin;
         }
 
         /// <summary>
-        /// Logouts from server.
+        /// Handles the MouseClick event of the HookManager control.
         /// </summary>
-        /// <param name="sessionID">The session identifier.</param>
-        /// <returns></returns>
-        public bool LogoutFromServer(long sessionID)
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseEventArgs"/> instance containing the event data.</param>
+        private void HookManager_MouseClick(object sender, MouseEventArgs e)
         {
-            bool isSuccessLogout = false;
-            try
+            Int32 hwnd = 0;
+            hwnd = GetForegroundWindow();
+
+            var sessionID = _contextDB.GetLoginSession().sessionID;
+
+            if (hwnd == 0)
+                return;
+
+            string appProcessName = Process.GetProcessById(GetWindowProcessID(hwnd)).ProcessName;
+
+            if (keyboardMouseLogList.Exists(monitor => monitor.ActivityName == appProcessName))
             {
-                var requestBody = new StringBuilder();
-                var client = new RestClient(string.Format("{0}/logout", API_URL));
-                var request = new RestRequest(Method.POST);
-
-                request.AddHeader("cache-control", "no-cache");
-                request.AddHeader("content-type", "application/x-www-form-urlencoded");
-
-                requestBody.AppendFormat("\"SessionID\" : \"{0}\",", sessionID);
-
-                request.AddParameter("application/json", string.Concat("{", requestBody.ToString(), "}"), ParameterType.RequestBody);
-
-                IRestResponse response = client.Execute(request);
-                isSuccessLogout = response.StatusCode.ToString() == "OK" ? true : false;
+                var monitor = keyboardMouseLogList.Where(a => a.ActivityName == appProcessName).OrderByDescending(b => b.StartTime).FirstOrDefault();
+                monitor.MouseClickCount++;
+                monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
             }
-            catch (Exception ex)
+            else
             {
-                throw ex;
-            }
+                if (keyboardMouseLogList.Count > 0)
+                {
+                    foreach (var log in keyboardMouseLogList)
+                        _contextDB.CreateData(log);
 
-            return isSuccessLogout;
+                    keyboardMouseLogList = new List<KeyboardMouseLogModel>();
+                }
+
+                var monitor = new KeyboardMouseLogModel();
+                monitor.KeyboardMouseLogModelId = Guid.NewGuid().ToString();
+                monitor.SessionID = sessionID;
+                monitor.ActivityName = appProcessName;
+                monitor.ActivityType = ACTIVITY_TYPE_APPLICATION;
+                monitor.KeyStrokeCount = 0;
+                monitor.MouseClickCount = 1;
+                monitor.StartTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
+                monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
+                monitor.IsSuccessSendToServer = false;
+
+                keyboardMouseLogList.Add(monitor);
+            }
+        }
+
+
+        /// <summary>
+        /// Gets the foreground window.
+        /// </summary>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        private static extern int GetForegroundWindow();
+
+        /// <summary>
+        /// Gets the window thread process identifier.
+        /// </summary>
+        /// <param name="hWnd">The h WND.</param>
+        /// <param name="lpdwProcessId">The LPDW process identifier.</param>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        private static extern UInt32 GetWindowThreadProcessId(Int32 hWnd, out Int32 lpdwProcessId);
+
+        /// <summary>
+        /// Gets the window process identifier.
+        /// </summary>
+        /// <param name="hwnd">The HWND.</param>
+        /// <returns></returns>
+        private static Int32 GetWindowProcessID(Int32 hwnd)
+        {
+            Int32 pid = 1;
+            GetWindowThreadProcessId(hwnd, out pid);
+            return pid;
         }
     }
 }

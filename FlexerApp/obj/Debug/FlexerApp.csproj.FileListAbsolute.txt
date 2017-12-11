@@ -1,6 +1,9 @@
 D:\Project\FlexerApp\FlexerApp\bin\Debug\FlexerApp.exe.config
+D:\Project\FlexerApp\FlexerApp\bin\Debug\FlexerApp.exe.manifest
+D:\Project\FlexerApp\FlexerApp\bin\Debug\FlexerApp.application
 D:\Project\FlexerApp\FlexerApp\bin\Debug\FlexerApp.exe
 D:\Project\FlexerApp\FlexerApp\bin\Debug\FlexerApp.pdb
+D:\Project\FlexerApp\FlexerApp\bin\Debug\CircularProgressBar.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\EntityFramework.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\EntityFramework.SqlServer.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\Gma.System.MouseKeyHook.dll
@@ -8,6 +11,7 @@ D:\Project\FlexerApp\FlexerApp\bin\Debug\RestSharp.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Data.SQLite.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Data.SQLite.EF6.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Data.SQLite.Linq.dll
+D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Device.Portable.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.IO.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Net.Http.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Net.Http.Extensions.dll
@@ -15,6 +19,8 @@ D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Net.Http.Primitives.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Net.Http.WebRequest.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Runtime.dll
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Threading.Tasks.dll
+D:\Project\FlexerApp\FlexerApp\bin\Debug\WinFormAnimation.dll
+D:\Project\FlexerApp\FlexerApp\bin\Debug\CircularProgressBar.xml
 D:\Project\FlexerApp\FlexerApp\bin\Debug\EntityFramework.xml
 D:\Project\FlexerApp\FlexerApp\bin\Debug\EntityFramework.SqlServer.xml
 D:\Project\FlexerApp\FlexerApp\bin\Debug\RestSharp.xml
@@ -27,11 +33,13 @@ D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Net.Http.Primitives.xml
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Net.Http.WebRequest.xml
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Runtime.xml
 D:\Project\FlexerApp\FlexerApp\bin\Debug\System.Threading.Tasks.xml
+D:\Project\FlexerApp\FlexerApp\bin\Debug\WinFormAnimation.xml
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.csproj.App.config
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.FlexerApp.resources
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.Properties.Resources.resources
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.csproj.GenerateResource.Cache
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.csproj.CoreCompileInputs.cache
+D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.exe.manifest
+D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.application
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.exe
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.pdb
-D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.csprojResolveAssemblyReference.cache

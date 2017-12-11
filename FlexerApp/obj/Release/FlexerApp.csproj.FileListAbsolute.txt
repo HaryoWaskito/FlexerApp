@@ -34,3 +34,4 @@ D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.csproj.GenerateResource.Cac
 D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.csproj.CoreCompileInputs.cache
 D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.exe
 D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.pdb
+D:\Project\FlexerApp\FlexerApp\obj\Release\FlexerApp.csprojResolveAssemblyReference.cache

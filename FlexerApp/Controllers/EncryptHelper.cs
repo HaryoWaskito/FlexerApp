@@ -8,7 +8,7 @@ namespace FlexerApp.Controllers
     public class EncryptHelper
     {
         private static string ENCRYPT_KEY = "H4ry0G@nteng!";
-        private static string ENCRYPT_SESSION_FILENAME = "F!l3EnCrypT";
+        //private static string ENCRYPT_SESSION_FILENAME = "F!l3EnCrypT";
 
         public void EncryptFile(string inputFile, string outputFile)
         {

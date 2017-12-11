@@ -17,6 +17,11 @@ namespace FlexerApp.Controllers
             return CaptureWindow(User32.GetDesktopWindow());
         }
 
+        /// <summary>
+        /// Captures the screen byte array string.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
         public byte[] CaptureScreenByteArrayString(ImageFormat format)
         {
             var image = CaptureWindow(User32.GetDesktopWindow());

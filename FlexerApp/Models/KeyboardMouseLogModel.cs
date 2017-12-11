@@ -4,7 +4,7 @@ namespace FlexerApp.Models
 {
     public class KeyboardMouseLogModel
     {
-        public string KeyboardMouseLogModelId { get; set; }
+        public string KeyboardMouseLogModelId { get; set; }        
         public long SessionID { get; set; }
         public string ActivityName { get; set; }
         public string ActivityType { get; set; }

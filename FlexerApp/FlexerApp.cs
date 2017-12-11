@@ -65,8 +65,8 @@ namespace FlexerApp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void LoginControl_Click(object sender, EventArgs e)
         {
+            ProgressCircleControl.Show();
             var controller = new Controller();
-            var logger = new Logger();
             var login = new LoginModel();
             var locator = new Locator();
             var innerClock = new InnerClock();
@@ -85,29 +85,34 @@ namespace FlexerApp
                 login.Password = PasswordControl.Text;
             }
 
-            login.LocationType = locator.LocationType;
-            login.IPAddress = locator.PrivateIP;
-            login.City = locator.City;
+            login.LocationType = "GPS";// locator.LocationType;
+            login.IPAddress = string.Empty;// locator.PrivateIP;
+            login.City = "Jakarta";// locator.City;
             login.Lat = locator.Latitude;
             login.Long = locator.Longitude;
             login.GMTDiff = locator.GMT;
-            login.LoginDate = innerClock.NetworkDate;
+            login.LoginDate = DateTime.Now;// innerClock.NetworkDate;
 
             var stopWatch = new Stopwatch();//Create InnerClock
             stopWatch.Start();
 
-            if (controller.LoginToServer(login))
+            if (new Connector().LoginToServer(login))
             {
                 SetAppToSytemTray();
-                logger.stopwatch = stopWatch;
-                logger.loginTime = login.LoginDate;
-                logger.BeginWatching();
+                controller.stopwatch = stopWatch;
+                controller.loginTime = login.LoginDate;
+                controller.BeginWatching();
+                ProgressCircleControl.Hide();
             }
             else
             {
+                ProgressCircleControl.Hide();
                 ErrorMessageControl.Text = "Login failed!";
-                var t = new Timer();
-                t.Interval = 3000; // it will Tick in 3 seconds
+                var t = new Timer
+                {
+                    Interval = 3000 // it will Tick in 3 seconds
+                };
+
                 t.Tick += (s, timeEventArg) =>
                 {
                     ErrorMessageControl.Hide();

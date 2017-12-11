@@ -12,11 +12,18 @@ namespace FlexerApp.Contexts
         private const string CONST_DATABASENAME = "TempDB.sqlite";
         private const string DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.sss";
 
+        /// <summary>
+        /// Privates the connection.
+        /// </summary>
+        /// <returns></returns>
         private SQLiteConnection privateConnection()
         {
             return new SQLiteConnection(string.Format("Data Source={0};Version=3;", CONST_DATABASENAME));
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Context"/> class.
+        /// </summary>
         public Context()
         {
             if (!File.Exists(CONST_DATABASENAME))
@@ -25,13 +32,17 @@ namespace FlexerApp.Contexts
             CreateTable();
         }
 
-        // Keyboard Mouse Log Function
+        #region Keyboard Mouse Log Function
 
+        /// <summary>
+        /// Creates the data.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void CreateData(KeyboardMouseLogModel item)
         {
             string insertQuery = string.Empty;
 
-            insertQuery = string.Format("INSERT INTO KeyboardMouseLogModel ( KeyboardMouseLogModelId, SessionID, ActivityName, ActivityType, InputKey, KeyStrokeCount, MouseClickCount, StartTime, EndTime, IsSuccessSendToServer ) " +
+            insertQuery = string.Format("INSERT INTO KeyboardMouseLogModel ( KeyboardMouseLogModelId,  SessionID, ActivityName, ActivityType, InputKey, KeyStrokeCount, MouseClickCount, StartTime, EndTime, IsSuccessSendToServer ) " +
                                         "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')",
                                         item.KeyboardMouseLogModelId, item.SessionID, item.ActivityName, item.ActivityType, item.InputKey, item.KeyStrokeCount, item.MouseClickCount, item.StartTime, item.EndTime, item.IsSuccessSendToServer);
 
@@ -52,6 +63,10 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Updates the data.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void UpdateData(KeyboardMouseLogModel item)
         {
             string updateQuery = string.Empty;
@@ -76,6 +91,9 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Deletes the data success send to server.
+        /// </summary>
         public void DeleteDataSuccessSendToServer()
         {
             string deleteQuery = "DELETE FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = 'True'";
@@ -97,6 +115,11 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Retrieves the data.
+        /// </summary>
+        /// <param name="KeyboardMouseLogModelId">The keyboard mouse log model identifier.</param>
+        /// <returns></returns>
         public KeyboardMouseLogModel RetrieveData(string KeyboardMouseLogModelId)
         {
             KeyboardMouseLogModel result = new KeyboardMouseLogModel();
@@ -135,10 +158,16 @@ namespace FlexerApp.Contexts
             return result;
         }
 
+        /// <summary>
+        /// Gets the log list send to server.
+        /// </summary>
+        /// <returns></returns>
         public List<KeyboardMouseLogModel> GetLogListSendToServer()
         {
             List<KeyboardMouseLogModel> result = new List<KeyboardMouseLogModel>();
-            string retrieveQuery = String.Format("SELECT * FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = '{0}'", false);
+
+            string retrieveQuery = String.Format("SELECT * FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = '{0}' ", false);
+
             using (var connection = privateConnection())
             {
                 connection.Open();
@@ -175,6 +204,10 @@ namespace FlexerApp.Contexts
             return result;
         }
 
+        /// <summary>
+        /// Gets the last active data.
+        /// </summary>
+        /// <returns></returns>
         public KeyboardMouseLogModel GetLastActiveData()
         {
             KeyboardMouseLogModel result = new KeyboardMouseLogModel();
@@ -214,8 +247,14 @@ namespace FlexerApp.Contexts
             return result;
         }
 
-        // Image Capture Function
-        
+        #endregion
+
+        #region Image Capture Function
+
+        /// <summary>
+        /// Creates the image data.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void CreateImageData(ScreenshotLogModel item)
         {
             string insertQuery = string.Empty;
@@ -241,6 +280,10 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Updates the image data.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void UpdateImageData(ScreenshotLogModel item)
         {
             string updateQuery = string.Empty;
@@ -265,6 +308,9 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Deletes the image success send to server.
+        /// </summary>
         public void DeleteImageSuccessSendToServer()
         {
             string deleteQuery = "DELETE FROM ScreenshotLogModel WHERE IsSuccessSendToServer = 'True'";
@@ -286,6 +332,10 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Gets the screenshot log list send to server.
+        /// </summary>
+        /// <returns></returns>
         public List<ScreenshotLogModel> GetScreenshotLogListSendToServer()
         {
             List<ScreenshotLogModel> result = new List<ScreenshotLogModel>();
@@ -309,10 +359,10 @@ namespace FlexerApp.Contexts
                             recordData.ScreenshotLogModelId = reader["ScreenshotLogModelId"] != null ? reader["ScreenshotLogModelId"].ToString() : string.Empty;
                             recordData.SessionID = reader["SessionID"] != null ? int.Parse(reader["SessionID"].ToString()) : 0;
                             recordData.ActivityName = reader["ActivityName"] != null ? reader["ActivityName"].ToString() : string.Empty;
-                            recordData.ActivityType= reader["ActivityType"] != null ? reader["ActivityType"].ToString() : string.Empty;
+                            recordData.ActivityType = reader["ActivityType"] != null ? reader["ActivityType"].ToString() : string.Empty;
                             recordData.Image = reader["Image"] != null ? Convert.FromBase64String(reader["Image"].ToString()) : new byte[0];
-                            if (reader["CaptureScreenDate"] != null && 
-                                ( DateTime.TryParseExact(reader["CaptureScreenDate"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult) ||
+                            if (reader["CaptureScreenDate"] != null &&
+                                (DateTime.TryParseExact(reader["CaptureScreenDate"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult) ||
                                   DateTime.TryParseExact(reader["CaptureScreenDate"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult)))
                                 recordData.CaptureScreenDate = dateTimeResult;
                             recordData.IsSuccessSendToServer = reader["IsSuccessSendToServer"] != null ? Convert.ToBoolean(reader["IsSuccessSendToServer"].ToString()) : false;
@@ -326,8 +376,14 @@ namespace FlexerApp.Contexts
             return result;
         }
 
-        // Login Function
+        #endregion
 
+        #region Login Function
+
+        /// <summary>
+        /// Creates the login session.
+        /// </summary>
+        /// <param name="item">The item.</param>
         public void CreateLoginSession(LoginModel item)
         {
             string insertQuery = string.Empty;
@@ -353,6 +409,10 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Gets the login session.
+        /// </summary>
+        /// <returns></returns>
         public LoginModel GetLoginSession()
         {
             LoginModel result = new LoginModel();
@@ -379,8 +439,8 @@ namespace FlexerApp.Contexts
                             result.LocationType = reader["LocationType"] != null ? reader["LocationType"].ToString() : string.Empty;
                             result.IPAddress = reader["IPAddress"] != null ? reader["IPAddress"].ToString() : string.Empty;
                             result.City = reader["City"] != null ? reader["City"].ToString() : string.Empty;
-                            result.Lat = reader["Lat"] != null ? float.Parse(reader["Lat"].ToString()) : 0;
-                            result.Long = reader["Long"] != null ? float.Parse(reader["Long"].ToString()) : 0;
+                            result.Lat = reader["Lat"] != null ? decimal.Parse(reader["Lat"].ToString()) : 0;
+                            result.Long = reader["Long"] != null ? decimal.Parse(reader["Long"].ToString()) : 0;
                             result.sessionID = reader["sessionID"] != null ? int.Parse(reader["sessionID"].ToString()) : 0;
                             result.loginToken = reader["loginToken"] != null ? reader["loginToken"].ToString() : string.Empty;
                             if (reader["CreatedDate"] != null && DateTime.TryParseExact(reader["CreatedDate"].ToString(), DATE_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
@@ -392,6 +452,10 @@ namespace FlexerApp.Contexts
             }
             return result;
         }
+
+        #endregion
+
+        #region Table Function
 
         /// <summary>
         /// Checks the is table exist.
@@ -426,6 +490,9 @@ namespace FlexerApp.Contexts
             return tableIsExist;
         }
 
+        /// <summary>
+        /// Creates the table.
+        /// </summary>
         private void CreateTable()
         {
             string createScript = string.Empty;
@@ -452,12 +519,12 @@ namespace FlexerApp.Contexts
             {
                 createScript = @" CREATE TABLE KeyboardMouseLogModel
                                   ( KeyboardMouseLogModelId TEXT PRIMARY KEY,
-                                    SessionID INT,
+                                    SessionID BIGINT,
                                     ActivityName TEXT,
                                     ActivityType TEXT,
                                     InputKey TEXT,
-                                    KeyStrokeCount INT,
-                                    MouseClickCount INT,
+                                    KeyStrokeCount BIGINT,
+                                    MouseClickCount BIGINT,
                                     StartTime TEXT,
                                     EndTime TEXT,
                                     IsSuccessSendToServer INT
@@ -481,6 +548,11 @@ namespace FlexerApp.Contexts
             }
         }
 
+        /// <summary>
+        /// Executes the non query script.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
         private bool ExecuteNonQueryScript(string query)
         {
             bool isSuccess = false;
@@ -501,5 +573,7 @@ namespace FlexerApp.Contexts
             }
             return isSuccess;
         }
+
+        #endregion
     }
 }
