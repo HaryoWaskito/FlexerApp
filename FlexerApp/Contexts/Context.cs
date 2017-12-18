@@ -96,23 +96,23 @@ namespace FlexerApp.Contexts
         /// </summary>
         public void DeleteDataSuccessSendToServer()
         {
-            //string deleteQuery = "DELETE FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = 'True'";
+            string deleteQuery = "DELETE FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = 'True'";
 
-            //using (var connection = privateConnection())
-            //{
-            //    connection.Open();
+            using (var connection = privateConnection())
+            {
+                connection.Open();
 
-            //    using (var transaction = connection.BeginTransaction())
-            //    {
-            //        var deleteCommand = connection.CreateCommand();
-            //        deleteCommand.Transaction = transaction;
-            //        deleteCommand.CommandText = deleteQuery;
-            //        deleteCommand.CommandType = System.Data.CommandType.Text;
-            //        deleteCommand.ExecuteNonQuery();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var deleteCommand = connection.CreateCommand();
+                    deleteCommand.Transaction = transaction;
+                    deleteCommand.CommandText = deleteQuery;
+                    deleteCommand.CommandType = System.Data.CommandType.Text;
+                    deleteCommand.ExecuteNonQuery();
 
-            //        transaction.Commit();
-            //    }
-            //}
+                    transaction.Commit();
+                }
+            }
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ namespace FlexerApp.Controllers
             var logList = _contextDB.GetLogListSendToServer();
 
             var sessionList = logList.Select(x => x.SessionID).Distinct();
-            WriteText("SessionList", string.Format("{0} -> {1}", sessionList.Count().ToString(), sessionList.ToArray().ToString()));
+            //WriteText("SessionList", string.Format("{0} -> {1}", sessionList.Count().ToString(), sessionList.ToArray().ToString()));
             try
             {
                 foreach (var sessionID in sessionList)
@@ -56,7 +56,7 @@ namespace FlexerApp.Controllers
                     requestBody.AppendFormat("[");
 
                     long rowNo = 1;
-                    WriteText("logList", string.Format("{0} -> {1}", logList.Count().ToString(), logList.Select(x => x.KeyboardMouseLogModelId).ToString()));
+                    //WriteText("logList", string.Format("{0} -> {1}", logList.Count().ToString(), logList.Select(x => x.KeyboardMouseLogModelId).ToString()));
                     var simpleList = logList.Distinct().Where(x => x.SessionID == sessionID);
                     foreach (var detailAct in simpleList)
                     {
@@ -74,7 +74,7 @@ namespace FlexerApp.Controllers
                     }
                     requestBody.AppendFormat("]");
 
-                    WriteText("RequestBody", requestBody.ToString());
+                    //WriteText("RequestBody", requestBody.ToString());
 
                     request.AddParameter("application/json", string.Concat("{", requestBody.ToString(), "}"), ParameterType.RequestBody);
 
@@ -115,7 +115,9 @@ namespace FlexerApp.Controllers
                 RestClient client = null;
                 RestRequest request = null;
 
-                foreach (var item in imageLogList.Where(x => x.SessionID == sessionID))
+                var simpleList = imageLogList.Distinct().Where(x => x.SessionID == sessionID);
+
+                foreach (var item in simpleList)
                 {
                     client = new RestClient(string.Format("{0}:{1}/addActivity/screenshot", API_URL, API_PORT));
                     request = new RestRequest(Method.POST);
@@ -225,6 +227,11 @@ namespace FlexerApp.Controllers
             }
         }
 
+        /// <summary>
+        /// Writes the text.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="resultText">The result text.</param>
         public static void WriteText(string fileName, string resultText)
         {
             string path = string.Format(@"C:\Users\Haryo Waskito\Desktop\{0}.txt", fileName);
