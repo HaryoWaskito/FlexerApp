@@ -40,6 +40,7 @@
             this.LoginControl = new System.Windows.Forms.Button();
             this.ExitControl = new System.Windows.Forms.Button();
             this.ProgressCircleControl = new CircularProgressBar.CircularProgressBar();
+            this.bgWorker = new System.ComponentModel.BackgroundWorker();
             this.SuspendLayout();
             // 
             // PasswordControl
@@ -165,6 +166,9 @@
             this.ProgressCircleControl.SuperscriptText = "";
             this.ProgressCircleControl.TabIndex = 12;
             this.ProgressCircleControl.TextMargin = new System.Windows.Forms.Padding(8, 8, 0, 0);
+            this.ProgressCircleControl.Value = 68;
+            this.ProgressCircleControl.Visible = false;
+
             // 
             // FlexerApp
             // 
@@ -204,6 +208,7 @@
         private System.Windows.Forms.Button LoginControl;
         private System.Windows.Forms.Button ExitControl;
         private CircularProgressBar.CircularProgressBar ProgressCircleControl;
+        private System.ComponentModel.BackgroundWorker bgWorker;
     }
 }
 

@@ -2,6 +2,7 @@
 using FlexerApp.Models;
 using RestSharp;
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -36,7 +37,7 @@ namespace FlexerApp.Controllers
             var logList = _contextDB.GetLogListSendToServer();
 
             var sessionList = logList.Select(x => x.SessionID).Distinct();
-
+            WriteText("SessionList", string.Format("{0} -> {1}", sessionList.Count().ToString(), sessionList.ToArray().ToString()));
             try
             {
                 foreach (var sessionID in sessionList)
@@ -55,8 +56,9 @@ namespace FlexerApp.Controllers
                     requestBody.AppendFormat("[");
 
                     long rowNo = 1;
-
-                    foreach (var detailAct in logList.Where(x => x.SessionID == sessionID))
+                    WriteText("logList", string.Format("{0} -> {1}", logList.Count().ToString(), logList.Select(x => x.KeyboardMouseLogModelId).ToString()));
+                    var simpleList = logList.Distinct().Where(x => x.SessionID == sessionID);
+                    foreach (var detailAct in simpleList)
                     {
                         requestBody.Append("{");
                         requestBody.AppendFormat("\"transactionID\" : \"{0}\",", detailAct.KeyboardMouseLogModelId);
@@ -67,10 +69,12 @@ namespace FlexerApp.Controllers
                         requestBody.AppendFormat("\"startDate\" : \"{0}\",", detailAct.StartTime.ToString(DATE_TIME_FORMAT));
                         requestBody.AppendFormat("\"endDate\" : \"{0}\"", detailAct.EndTime.ToString(DATE_TIME_FORMAT));
                         requestBody.Append("}");
-                        requestBody.AppendFormat("{0}", rowNo < logList.Count ? "," : string.Empty);
+                        requestBody.AppendFormat("{0}", rowNo < simpleList.Count() ? "," : string.Empty);
                         rowNo++;
                     }
                     requestBody.AppendFormat("]");
+
+                    WriteText("RequestBody", requestBody.ToString());
 
                     request.AddParameter("application/json", string.Concat("{", requestBody.ToString(), "}"), ParameterType.RequestBody);
 
@@ -219,6 +223,28 @@ namespace FlexerApp.Controllers
             {
                 throw ex;
             }
+        }
+
+        public static void WriteText(string fileName, string resultText)
+        {
+            string path = string.Format(@"C:\Users\Haryo Waskito\Desktop\{0}.txt", fileName);
+            // This text is added only once to the file.
+            if (!File.Exists(path))
+            {
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine(resultText);
+                }
+            }
+
+            else
+                // This text is always added, making the file longer over time
+                // if it is not deleted.
+                using (StreamWriter sw = File.AppendText(path))
+                {
+                    sw.WriteLine(resultText);
+                }
         }
     }
 }

@@ -2,7 +2,7 @@
 using FlexerApp.Models;
 using System;
 using System.Diagnostics;
-//using System.Device.Location;
+
 using System.Net;
 using System.Windows.Forms;
 using System.Xml;
@@ -65,7 +65,8 @@ namespace FlexerApp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void LoginControl_Click(object sender, EventArgs e)
         {
-            ProgressCircleControl.Show();
+            //bgWorker.RunWorkerAsync();
+
             var controller = new Controller();
             var login = new LoginModel();
             var locator = new Locator();
@@ -101,7 +102,7 @@ namespace FlexerApp
                 SetAppToSytemTray();
                 controller.stopwatch = stopWatch;
                 controller.loginTime = login.LoginDate;
-                controller.BeginWatching();
+                controller.StartMainProcess();
                 ProgressCircleControl.Hide();
             }
             else
@@ -179,5 +180,10 @@ namespace FlexerApp
         {
             this.Close();
         }
+
+        //private void bgWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        //{
+        //    ProgressCircleControl.Visible = true;
+        //}
     }
 }

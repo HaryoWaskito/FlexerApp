@@ -43,3 +43,4 @@ D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.exe.manifest
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.application
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.exe
 D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.pdb
+D:\Project\FlexerApp\FlexerApp\obj\Debug\FlexerApp.csprojResolveAssemblyReference.cache

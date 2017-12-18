@@ -1,17 +1,13 @@
 ﻿using FlexerApp.Contexts;
 using FlexerApp.Models;
 using Gma.System.MouseKeyHook;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Timers;
 using System.Windows.Forms;
 
 namespace FlexerApp.Controllers
@@ -21,17 +17,14 @@ namespace FlexerApp.Controllers
         private const string ACTIVITY_TYPE_APPLICATION = "Application";
         private const string ACTIVITY_TYPE_URL = "URL";
 
-        private const int CaptureImageInterval = 30000;
-        private const int UploadDataInterval = 30000;
+        private const int CaptureImageInterval = 10000;
+        private const int UploadDataInterval = 10000;
 
         public Stopwatch stopwatch;
         public DateTime loginTime;
 
-        private System.Timers.Timer captureImageTimer;
-        private System.Timers.Timer uploadDataTimer;
-
-        static readonly object captureLock = new object();
-        static readonly object uploadLock = new object();
+        static readonly object captureImageLock = new object();
+        static readonly object uploadDataLock = new object();
 
         private Context _contextDB = new Context();
         private IKeyboardMouseEvents m_Events;
@@ -40,46 +33,46 @@ namespace FlexerApp.Controllers
         /// <summary>
         /// Begins the watching.
         /// </summary>
-        public void BeginWatching()
+        public void StartMainProcess()
         {
+            //new Thread(new ThreadStart(CaptureImage)).Start();
+            new Thread(new ThreadStart(UploadData)).Start();
+
             Unsubscribe();
             Subscribe(Hook.GlobalEvents());
-
-            while (true)
-            {
-                Thread captureImageThread = new Thread(new ThreadStart(CaptureImageTimer));
-                captureImageThread.Start();
-
-                Thread uploadDataThread = new Thread(new ThreadStart(UploadDataTimer));
-                uploadDataThread.Start();
-            }
         }
 
         /// <summary>
-        /// Hooks the manager screenshot timer.
+        /// Captures the image.
         /// </summary>
-        private void CaptureImageTimer()
+        private void CaptureImage()
         {
-            lock (captureLock)
+            while (true)
             {
-                captureImageTimer = new System.Timers.Timer(CaptureImageInterval);
-                captureImageTimer.Elapsed += new ElapsedEventHandler(CaptureImageTimerElapsed);
-                captureImageTimer.Enabled = true;
-                Thread.Sleep(1000);
+                lock (captureImageLock)
+                {
+                    HookManager_Screenshot();
+                    Thread.Sleep(CaptureImageInterval);
+                }
             }
         }
 
         /// <summary>
         /// Sends the data to server timer.
         /// </summary>
-        private void UploadDataTimer()
+        private void UploadData()
         {
-            lock (uploadLock)
+            var connector = new Connector();
+
+            while (true)
             {
-                uploadDataTimer = new System.Timers.Timer(UploadDataInterval);
-                uploadDataTimer.Elapsed += new ElapsedEventHandler(UploadDataTimerElapsed);
-                uploadDataTimer.Enabled = true;
-                Thread.Sleep(1000);
+                lock (uploadDataLock)
+                {
+                    connector.SendKeyLogDataToServer();
+                    connector.SendLocalImageDataToServer();
+
+                    Thread.Sleep(UploadDataInterval);
+                }
             }
         }
 
@@ -128,7 +121,6 @@ namespace FlexerApp.Controllers
             connector.SendKeyLogDataToServer();
             connector.SendLocalImageDataToServer();
         }
-
 
         /// <summary>
         /// Hooks the manager screenshot.
@@ -290,5 +282,7 @@ namespace FlexerApp.Controllers
             GetWindowThreadProcessId(hwnd, out pid);
             return pid;
         }
+
+
     }
 }
