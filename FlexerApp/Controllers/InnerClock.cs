@@ -147,7 +147,7 @@ namespace FlexerApp.Controllers
                 }
                 catch (Exception ex)
                 {
-                    /* Do Nothing...try the next server */
+                    //throw ex;
                 }
             }
 

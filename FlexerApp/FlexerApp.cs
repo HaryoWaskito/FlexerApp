@@ -2,15 +2,27 @@
 using FlexerApp.Models;
 using System;
 using System.Diagnostics;
-
-using System.Net;
 using System.Windows.Forms;
-using System.Xml;
 
 namespace FlexerApp
 {
     public partial class FlexerApp : Form
     {
+        #region Rounded Windows Form
+
+        [System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn
+        (
+             int nLeftRect,     // x-coordinate of upper-left corner
+             int nTopRect,      // y-coordinate of upper-left corner
+             int nRightRect,    // x-coordinate of lower-right corner
+             int nBottomRect,   // y-coordinate of lower-right corner
+             int nWidthEllipse, // height of ellipse
+             int nHeightEllipse // width of ellipse
+        );
+
+        #endregion
+
         #region Drag Form Function
 
         public const int WM_NCLBUTTONDOWN = 0xA1;
@@ -56,6 +68,13 @@ namespace FlexerApp
         public FlexerApp()
         {
             InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.None;
+            Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20));
+
+            EmailControl.Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, EmailControl.Width, EmailControl.Height, 20, 20));
+            PasswordControl.Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, PasswordControl.Width, PasswordControl.Height, 20, 20));
+            LoginControl.Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, LoginControl.Width, LoginControl.Height, 20, 20));
+            ExitControl.Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, ExitControl.Width, ExitControl.Height, 20, 20));
         }
 
         /// <summary>
@@ -63,18 +82,24 @@ namespace FlexerApp
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void LoginControl_Click(object sender, EventArgs e)
+        private async void LoginControl_Click(object sender, EventArgs e)
         {
-            //bgWorker.RunWorkerAsync();
+            ProgressCircleControl.Show();
+            await System.Threading.Tasks.Task.Run(() => ProcessLogin());
+            ProgressCircleControl.Hide();
+        }
 
+        /// <summary>
+        /// Processes the login.
+        /// </summary>
+        private void ProcessLogin()
+        {
             var controller = new Controller();
             var login = new LoginModel();
             var locator = new Locator();
-            var innerClock = new InnerClock();
+            //var innerClock = new InnerClock();
 
-            login.LoginModelId = Guid.NewGuid().ToString();
-
-            EmailControl.Text = "asd";
+            //EmailControl.Text = "asd";
             if (EmailControl.Text == "asd")
             {
                 login.Email = "hwk@aab.com";
@@ -103,24 +128,46 @@ namespace FlexerApp
                 controller.stopwatch = stopWatch;
                 controller.loginTime = login.LoginDate;
                 controller.StartMainProcess();
-                ProgressCircleControl.Hide();
             }
             else
             {
-                ProgressCircleControl.Hide();
-                ErrorMessageControl.Text = "Login failed!";
-                var t = new Timer
-                {
-                    Interval = 3000 // it will Tick in 3 seconds
-                };
-
-                t.Tick += (s, timeEventArg) =>
-                {
-                    ErrorMessageControl.Hide();
-                    t.Stop();
-                };
-                t.Start();
+                ShowErrorMessage("Login failed!");
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="text">The text.</param>
+        delegate void StringArgReturningVoidDelegate(string text);
+
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        private void ShowErrorMessage(string errorMessage)
+        {            
+            if (ErrorMessageControl.InvokeRequired)
+            {
+                StringArgReturningVoidDelegate d = new StringArgReturningVoidDelegate(ShowErrorMessage);
+                this.Invoke(d, new object[] { errorMessage });
+            }
+            else
+            {
+                ErrorMessageControl.Text = "Login failed!";
+            }
+                        
+            var t = new Timer
+            {
+                Interval = 3000 // it will Tick in 3 seconds
+            };
+
+            t.Tick += (s, timeEventArg) =>
+            {
+                ErrorMessageControl.Hide();
+                t.Stop();
+            };
+            t.Start();
         }
 
         /// <summary>
@@ -180,10 +227,5 @@ namespace FlexerApp
         {
             this.Close();
         }
-
-        //private void bgWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        //{
-        //    ProgressCircleControl.Visible = true;
-        //}
-    }
+    }    
 }

@@ -130,21 +130,21 @@ namespace FlexerApp.Controllers
             Int32 hwnd = 0;
             hwnd = GetForegroundWindow();
 
-            var sessionID = _contextDB.GetLoginSession().sessionID;
+            var sessionID = _contextDB.GetLoginSession().SessionId;
 
             if (hwnd == 0)
                 return;
 
             string appProcessName = Process.GetProcessById(GetWindowProcessID(hwnd)).ProcessName;
 
-            var capture = new ScreenshotLogModel();
-            capture.ScreenshotLogModelId = Guid.NewGuid().ToString();
-            capture.SessionID = sessionID;
-            capture.ActivityName = appProcessName;
-            capture.ActivityType = "Application"; //Sementara dipantek!
-            capture.Image = new ScreenCapture().CaptureScreenByteArrayString(System.Drawing.Imaging.ImageFormat.Jpeg);
-            capture.CaptureScreenDate = loginTime.AddTicks(stopwatch.ElapsedTicks);
-            capture.IsSuccessSendToServer = false;
+            var capture = new ScreenshotLogModel
+            {
+                SessionId = sessionID,
+                ActivityName = appProcessName,
+                ActivityType = "Application", //Sementara dipantek!
+                Image = new ScreenCapture().CaptureScreenByteArrayString(System.Drawing.Imaging.ImageFormat.Jpeg),
+                CaptureScreenDate = loginTime.AddTicks(stopwatch.ElapsedTicks)
+            };
 
             _contextDB.CreateImageData(capture);
         }
@@ -161,7 +161,7 @@ namespace FlexerApp.Controllers
                 Int32 hwnd = 0;
                 hwnd = GetForegroundWindow();
 
-                var sessionID = _contextDB.GetLoginSession().sessionID;
+                var sessionID = _contextDB.GetLoginSession().SessionId;
 
                 if (hwnd == 0)
                     return;
@@ -172,7 +172,6 @@ namespace FlexerApp.Controllers
                 {
                     var monitor = keyboardMouseLogList.Where(a => a.ActivityName == appProcessName).OrderByDescending(b => b.StartTime).FirstOrDefault();
                     monitor.KeyStrokeCount++;
-                    monitor.InputKey = string.Concat(monitor.InputKey, e.KeyChar.ToString());
                     monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
                 }
                 else
@@ -185,17 +184,17 @@ namespace FlexerApp.Controllers
                         keyboardMouseLogList = new List<KeyboardMouseLogModel>();
                     }
 
-                    var monitor = new KeyboardMouseLogModel();
-                    monitor.KeyboardMouseLogModelId = Guid.NewGuid().ToString();
-                    monitor.SessionID = sessionID;
-                    monitor.ActivityName = appProcessName;
-                    monitor.ActivityType = ACTIVITY_TYPE_APPLICATION;
-                    monitor.InputKey = e.KeyChar.ToString();
-                    monitor.KeyStrokeCount = 1;
-                    monitor.MouseClickCount = 0;
-                    monitor.StartTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
-                    monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
-                    monitor.IsSuccessSendToServer = false;
+                    var monitor = new KeyboardMouseLogModel
+                    {
+                        SessionId = sessionID,
+                        ActivityName = appProcessName,
+                        ActivityType = ACTIVITY_TYPE_APPLICATION,
+                        KeyStrokeCount = 1,
+                        MouseClickCount = 0,
+                        StartTime = loginTime.AddTicks(stopwatch.ElapsedTicks),
+                        EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks),
+                        IsSuccessSendToServer = false
+                    };
 
                     keyboardMouseLogList.Add(monitor);
                 }
@@ -216,7 +215,7 @@ namespace FlexerApp.Controllers
             Int32 hwnd = 0;
             hwnd = GetForegroundWindow();
 
-            var sessionID = _contextDB.GetLoginSession().sessionID;
+            var sessionID = _contextDB.GetLoginSession().SessionId;
 
             if (hwnd == 0)
                 return;
@@ -239,21 +238,21 @@ namespace FlexerApp.Controllers
                     keyboardMouseLogList = new List<KeyboardMouseLogModel>();
                 }
 
-                var monitor = new KeyboardMouseLogModel();
-                monitor.KeyboardMouseLogModelId = Guid.NewGuid().ToString();
-                monitor.SessionID = sessionID;
-                monitor.ActivityName = appProcessName;
-                monitor.ActivityType = ACTIVITY_TYPE_APPLICATION;
-                monitor.KeyStrokeCount = 0;
-                monitor.MouseClickCount = 1;
-                monitor.StartTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
-                monitor.EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks);
-                monitor.IsSuccessSendToServer = false;
+                var monitor = new KeyboardMouseLogModel
+                {
+                    SessionId = sessionID,
+                    ActivityName = appProcessName,
+                    ActivityType = ACTIVITY_TYPE_APPLICATION,
+                    KeyStrokeCount = 0,
+                    MouseClickCount = 1,
+                    StartTime = loginTime.AddTicks(stopwatch.ElapsedTicks),
+                    EndTime = loginTime.AddTicks(stopwatch.ElapsedTicks),
+                    IsSuccessSendToServer = false
+                };
 
                 keyboardMouseLogList.Add(monitor);
             }
         }
-
 
         /// <summary>
         /// Gets the foreground window.
@@ -282,7 +281,5 @@ namespace FlexerApp.Controllers
             GetWindowThreadProcessId(hwnd, out pid);
             return pid;
         }
-
-
     }
 }

@@ -16,9 +16,9 @@ namespace FlexerApp.Contexts
         /// Privates the connection.
         /// </summary>
         /// <returns></returns>
-        private SQLiteConnection privateConnection()
+        private SQLiteConnection PrivateConnection()
         {
-            return new SQLiteConnection(string.Format("Data Source={0};Version=3;", CONST_DATABASENAME));
+            return new SQLiteConnection(string.Format("Data Source={0};Version=3;datetimeformat=CurrentCulture", CONST_DATABASENAME));
         }
 
         /// <summary>
@@ -42,11 +42,11 @@ namespace FlexerApp.Contexts
         {
             string insertQuery = string.Empty;
 
-            insertQuery = string.Format("INSERT INTO KeyboardMouseLogModel ( KeyboardMouseLogModelId,  SessionID, ActivityName, ActivityType, InputKey, KeyStrokeCount, MouseClickCount, StartTime, EndTime, IsSuccessSendToServer ) " +
-                                        "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')",
-                                        item.KeyboardMouseLogModelId, item.SessionID, item.ActivityName, item.ActivityType, item.InputKey, item.KeyStrokeCount, item.MouseClickCount, item.StartTime, item.EndTime, item.IsSuccessSendToServer);
+            insertQuery = string.Format("INSERT INTO KeyboardMouseLogModel ( SessionId, ActivityName, ActivityType, KeyStrokeCount, MouseClickCount, StartTime, EndTime ) " +
+                                        "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
+                                         item.SessionId, item.ActivityName, item.ActivityType, item.KeyStrokeCount, item.MouseClickCount, item.StartTime, item.EndTime);
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -74,7 +74,7 @@ namespace FlexerApp.Contexts
             updateQuery = string.Format("UPDATE KeyboardMouseLogModel SET KeyStrokeCount = '{0}', MouseClickCount = '{1}', StartTime = '{2}', EndTime = '{3}', IsSuccessSendToServer = '{4}' " +
                                         "WHERE KeyboardMouseLogModelId = '{5}'", item.KeyStrokeCount, item.MouseClickCount, item.StartTime, item.EndTime, item.IsSuccessSendToServer, item.KeyboardMouseLogModelId);
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -96,9 +96,9 @@ namespace FlexerApp.Contexts
         /// </summary>
         public void DeleteDataSuccessSendToServer()
         {
-            string deleteQuery = "DELETE FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = 'True'";
+            string deleteQuery = "DELETE FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = 'true'";
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -124,7 +124,7 @@ namespace FlexerApp.Contexts
         {
             KeyboardMouseLogModel result = new KeyboardMouseLogModel();
             string retrieveQuery = String.Format("SELECT * FROM KeyboardMouseLogModel WHERE KeyboardMouseLogModelId = '{0}'", KeyboardMouseLogModelId);
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -140,16 +140,20 @@ namespace FlexerApp.Contexts
                     {
                         if (reader.Read())
                         {
-                            recordData.KeyboardMouseLogModelId = reader["KeyboardMouseLogModelId"] != null ? reader["KeyboardMouseLogModelId"].ToString() : string.Empty;
-                            recordData.SessionID = reader["SessionID"] != null ? int.Parse(reader["SessionID"].ToString()) : 0;
-                            recordData.ActivityName = reader["ActivityName"] != null ? reader["ActivityName"].ToString() : string.Empty;
-                            recordData.ActivityType = reader["ActivityType"] != null ? reader["ActivityType"].ToString() : string.Empty;
-                            recordData.KeyStrokeCount = reader["KeyStrokeCount"] != null ? long.Parse(reader["KeyStrokeCount"].ToString()) : 0;
-                            recordData.MouseClickCount = reader["MouseClickCount"] != null ? long.Parse(reader["MouseClickCount"].ToString()) : 0;
-                            if (reader["StartTime"] != null && DateTime.TryParseExact(reader["StartTime"].ToString(), "yyyymmdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                recordData.StartTime = dateTimeResult;
-                            if (reader["EndTime"] != null && DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyymmdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                recordData.EndTime = dateTimeResult;
+                            recordData.KeyboardMouseLogModelId = reader["KeyboardMouseLogModelId"] != DBNull.Value ? Convert.ToInt32(reader["KeyboardMouseLogModelId"]) : 0;
+                            recordData.SessionId = reader["SessionId"] != DBNull.Value ? Convert.ToInt32(reader["SessionId"]) : 0;
+                            recordData.ActivityName = reader["ActivityName"] != DBNull.Value ? reader["ActivityName"].ToString() : string.Empty;
+                            recordData.ActivityType = reader["ActivityType"] != DBNull.Value ? reader["ActivityType"].ToString() : string.Empty;
+                            recordData.KeyStrokeCount = reader["KeyStrokeCount"] != DBNull.Value ? Convert.ToInt64(reader["KeyStrokeCount"]) : 0;
+                            recordData.MouseClickCount = reader["MouseClickCount"] != DBNull.Value ? Convert.ToInt64(reader["MouseClickCount"]) : 0;
+                            if (reader["StartTime"] != DBNull.Value)//&& DateTime.TryParseExact(reader["StartTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.StartTime = Convert.ToDateTime(reader["StartTime"]);// dateTimeResult;
+                            if (reader["EndTime"] != DBNull.Value)//&& DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.EndTime = Convert.ToDateTime(reader["EndTime"]);// dateTimeResult;
+                            recordData.IsSuccessSendToServer = reader["IsSuccessSendToServer"] != DBNull.Value ? Convert.ToBoolean(reader["IsSuccessSendToServer"]) : false;
+                            if (reader["CreatedDate"] != DBNull.Value)//&& DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.CreatedDate = Convert.ToDateTime(reader["CreatedDate"]);// dateTimeResult;
+                            recordData.RowStatus = reader["RowStatus"] != DBNull.Value ? Convert.ToInt32(reader["RowStatus"]) : 0;
                         }
                     }
                     transaction.Commit();
@@ -166,9 +170,9 @@ namespace FlexerApp.Contexts
         {
             List<KeyboardMouseLogModel> result = new List<KeyboardMouseLogModel>();
 
-            string retrieveQuery = String.Format("SELECT * FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = '{0}' ", false);
+            string retrieveQuery = "SELECT * FROM KeyboardMouseLogModel WHERE IsSuccessSendToServer = 'False'";
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -184,16 +188,21 @@ namespace FlexerApp.Contexts
                     {
                         while (reader.Read())
                         {
-                            recordData.KeyboardMouseLogModelId = reader["KeyboardMouseLogModelId"] != null ? reader["KeyboardMouseLogModelId"].ToString() : string.Empty;
-                            recordData.SessionID = reader["SessionID"] != null ? int.Parse(reader["SessionID"].ToString()) : 0;
-                            recordData.ActivityName = reader["ActivityName"] != null ? reader["ActivityName"].ToString() : string.Empty;
-                            recordData.ActivityType = reader["ActivityType"] != null ? reader["ActivityType"].ToString() : string.Empty;
-                            recordData.KeyStrokeCount = reader["KeyStrokeCount"] != null ? long.Parse(reader["KeyStrokeCount"].ToString()) : 0;
-                            recordData.MouseClickCount = reader["MouseClickCount"] != null ? long.Parse(reader["MouseClickCount"].ToString()) : 0;
-                            if (reader["StartTime"] != null && DateTime.TryParseExact(reader["StartTime"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                recordData.StartTime = dateTimeResult;
-                            if (reader["EndTime"] != null && DateTime.TryParseExact(reader["EndTime"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                recordData.EndTime = dateTimeResult;
+                            recordData.KeyboardMouseLogModelId = reader["KeyboardMouseLogModelId"] != DBNull.Value ? Convert.ToInt32(reader["KeyboardMouseLogModelId"]) : 0;
+                            recordData.SessionId = reader["SessionId"] != DBNull.Value ? int.Parse(reader["SessionId"].ToString()) : 0;
+                            recordData.ActivityName = reader["ActivityName"] != DBNull.Value ? reader["ActivityName"].ToString() : string.Empty;
+                            recordData.ActivityType = reader["ActivityType"] != DBNull.Value ? reader["ActivityType"].ToString() : string.Empty;
+                            recordData.KeyStrokeCount = reader["KeyStrokeCount"] != DBNull.Value ? long.Parse(reader["KeyStrokeCount"].ToString()) : 0;
+                            recordData.MouseClickCount = reader["MouseClickCount"] != DBNull.Value ? long.Parse(reader["MouseClickCount"].ToString()) : 0;
+                            if (reader["CreatedDate"] != DBNull.Value)//&& DateTime.TryParseExact(reader["EndTime"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.CreatedDate = Convert.ToDateTime(reader["CreatedDate"]);
+                            if (reader["StartTime"] != DBNull.Value)//&& DateTime.TryParseExact(reader["StartTime"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.StartTime = Convert.ToDateTime(reader["StartTime"]);//dateTimeResult;
+                            if (reader["EndTime"] != DBNull.Value)// && DateTime.TryParseExact(reader["EndTime"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.EndTime = Convert.ToDateTime(reader["EndTime"]); //dateTimeResult;
+                            recordData.IsSuccessSendToServer = reader["IsSuccessSendToServer"] != DBNull.Value ? Convert.ToBoolean(reader["IsSuccessSendToServer"]) : false;
+
+                            recordData.RowStatus = reader["RowStatus"] != DBNull.Value ? Convert.ToInt32(reader["RowStatus"]) : 0;
 
                             result.Add(recordData);
                         }
@@ -212,7 +221,7 @@ namespace FlexerApp.Contexts
         {
             KeyboardMouseLogModel result = new KeyboardMouseLogModel();
             string retrieveQuery = String.Format("SELECT * FROM KeyboardMouseLogModel ORDER BY StartTime DESC LIMIT 1");
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -228,17 +237,20 @@ namespace FlexerApp.Contexts
                     {
                         if (reader.Read())
                         {
-                            recordData.KeyboardMouseLogModelId = reader["KeyboardMouseLogModelId"] != null ? reader["KeyboardMouseLogModelId"].ToString() : string.Empty;
-                            recordData.SessionID = reader["SessionID"] != null ? int.Parse(reader["SessionID"].ToString()) : 0;
-                            recordData.ActivityName = reader["ActivityName"] != null ? reader["ActivityName"].ToString() : string.Empty;
-                            recordData.ActivityType = reader["ActivityType"] != null ? reader["ActivityType"].ToString() : string.Empty;
-                            recordData.InputKey = reader["InputKey"] != null ? reader["InputKey"].ToString() : string.Empty;
-                            recordData.KeyStrokeCount = reader["KeyStrokeCount"] != null ? long.Parse(reader["KeyStrokeCount"].ToString()) : 0;
-                            recordData.MouseClickCount = reader["MouseClickCount"] != null ? long.Parse(reader["MouseClickCount"].ToString()) : 0;
-                            if (reader["StartTime"] != null && DateTime.TryParseExact(reader["StartTime"].ToString(), "yyyymmdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                recordData.StartTime = dateTimeResult;
-                            if (reader["EndTime"] != null && DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyymmdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                recordData.EndTime = dateTimeResult;
+                            recordData.KeyboardMouseLogModelId = reader["KeyboardMouseLogModelId"] != DBNull.Value ? Convert.ToInt32(reader["KeyboardMouseLogModelId"]) : 0;
+                            recordData.SessionId = reader["SessionId"] != DBNull.Value ? Convert.ToInt32(reader["SessionId"]) : 0;
+                            recordData.ActivityName = reader["ActivityName"] != DBNull.Value ? reader["ActivityName"].ToString() : string.Empty;
+                            recordData.ActivityType = reader["ActivityType"] != DBNull.Value ? reader["ActivityType"].ToString() : string.Empty;
+                            recordData.KeyStrokeCount = reader["KeyStrokeCount"] != DBNull.Value ? Convert.ToInt64(reader["KeyStrokeCount"].ToString()) : 0;
+                            recordData.MouseClickCount = reader["MouseClickCount"] != DBNull.Value ? Convert.ToInt64(reader["MouseClickCount"].ToString()) : 0;
+                            if (reader["StartTime"] != DBNull.Value)// && DateTime.TryParseExact(reader["StartTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.StartTime = Convert.ToDateTime(reader["StartTime"]);// dateTimeResult;
+                            if (reader["EndTime"] != DBNull.Value)// && DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.EndTime = Convert.ToDateTime(reader["EndTime"]);// dateTimeResult;
+                            recordData.IsSuccessSendToServer = reader["IsSuccessSendToServer"] != DBNull.Value ? Convert.ToBoolean(reader["IsSuccessSendToServer"]) : false;
+                            if (reader["CreatedDate"] != DBNull.Value && DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.CreatedDate = Convert.ToDateTime(reader["CreatedDate"]);// dateTimeResult;
+                            recordData.RowStatus = reader["RowStatus"] != DBNull.Value ? Convert.ToInt32(reader["RowStatus"]) : 0;
                         }
                     }
                     transaction.Commit();
@@ -259,11 +271,11 @@ namespace FlexerApp.Contexts
         {
             string insertQuery = string.Empty;
 
-            insertQuery = string.Format("INSERT INTO ScreenshotLogModel ( ScreenshotLogModelId, SessionID, ActivityName, ActivityType, Image, CaptureScreenDate, IsSuccessSendToServer ) " +
-                                        "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
-                                        item.ScreenshotLogModelId, item.SessionID, item.ActivityName, item.ActivityType, Convert.ToBase64String(item.Image), item.CaptureScreenDate, item.IsSuccessSendToServer);
+            insertQuery = string.Format("INSERT INTO ScreenshotLogModel ( ScreenshotLogModelId, SessionId, ActivityName, ActivityType, Image, CaptureScreenDate, IsSuccessSendToServer, CreatedDate, RowStatus ) " +
+                                        "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')",
+                                        item.ScreenshotLogModelId, item.SessionId, item.ActivityName, item.ActivityType, Convert.ToBase64String(item.Image), item.CaptureScreenDate, item.IsSuccessSendToServer, DateTime.Now.ToString(DATE_FORMAT), 0);
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -291,7 +303,7 @@ namespace FlexerApp.Contexts
             updateQuery = string.Format("UPDATE ScreenshotLogModel SET IsSuccessSendToServer = '{0}' " +
                                         "WHERE ScreenshotLogModelId = '{1}'", item.IsSuccessSendToServer, item.ScreenshotLogModelId);
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -315,7 +327,7 @@ namespace FlexerApp.Contexts
         {
             string deleteQuery = "DELETE FROM ScreenshotLogModel WHERE IsSuccessSendToServer = 'True'";
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -339,8 +351,8 @@ namespace FlexerApp.Contexts
         public List<ScreenshotLogModel> GetScreenshotLogListSendToServer()
         {
             List<ScreenshotLogModel> result = new List<ScreenshotLogModel>();
-            string retrieveQuery = String.Format("SELECT * FROM ScreenshotLogModel WHERE IsSuccessSendToServer = '{0}'", false);
-            using (var connection = privateConnection())
+            string retrieveQuery = "SELECT * FROM ScreenshotLogModel WHERE IsSuccessSendToServer = 'False'";
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -356,16 +368,17 @@ namespace FlexerApp.Contexts
                     {
                         while (reader.Read())
                         {
-                            recordData.ScreenshotLogModelId = reader["ScreenshotLogModelId"] != null ? reader["ScreenshotLogModelId"].ToString() : string.Empty;
-                            recordData.SessionID = reader["SessionID"] != null ? int.Parse(reader["SessionID"].ToString()) : 0;
-                            recordData.ActivityName = reader["ActivityName"] != null ? reader["ActivityName"].ToString() : string.Empty;
-                            recordData.ActivityType = reader["ActivityType"] != null ? reader["ActivityType"].ToString() : string.Empty;
-                            recordData.Image = reader["Image"] != null ? Convert.FromBase64String(reader["Image"].ToString()) : new byte[0];
-                            if (reader["CaptureScreenDate"] != null &&
-                                (DateTime.TryParseExact(reader["CaptureScreenDate"].ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult) ||
-                                  DateTime.TryParseExact(reader["CaptureScreenDate"].ToString(), "dd/MM/yyyy H:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult)))
-                                recordData.CaptureScreenDate = dateTimeResult;
-                            recordData.IsSuccessSendToServer = reader["IsSuccessSendToServer"] != null ? Convert.ToBoolean(reader["IsSuccessSendToServer"].ToString()) : false;
+                            recordData.ScreenshotLogModelId = reader["ScreenshotLogModelId"] != DBNull.Value ? Convert.ToInt32(reader["ScreenshotLogModelId"]) : 0;
+                            recordData.SessionId = reader["SessionId"] != DBNull.Value ? Convert.ToInt32(reader["SessionId"]) : 0;
+                            recordData.ActivityName = reader["ActivityName"] != DBNull.Value ? reader["ActivityName"].ToString() : string.Empty;
+                            recordData.ActivityType = reader["ActivityType"] != DBNull.Value ? reader["ActivityType"].ToString() : string.Empty;
+                            recordData.Image = reader["Image"] != DBNull.Value ? Convert.FromBase64String(reader["Image"].ToString()) : new byte[0];
+                            if (reader["CaptureScreenDate"] != DBNull.Value)// &&(DateTime.TryParseExact(reader["CaptureScreenDate"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult)))
+                                recordData.CaptureScreenDate = Convert.ToDateTime(reader["CaptureScreenDate"]);// dateTimeResult;
+                            recordData.IsSuccessSendToServer = reader["IsSuccessSendToServer"] != DBNull.Value ? Convert.ToBoolean(reader["IsSuccessSendToServer"].ToString()) : false;
+                            if (reader["CreatedDate"] != DBNull.Value)// && DateTime.TryParseExact(reader["EndTime"].ToString(), "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                recordData.CreatedDate = Convert.ToDateTime(reader["CreatedDate"]);// dateTimeResult;
+                            recordData.RowStatus = reader["RowStatus"] != DBNull.Value ? Convert.ToInt32(reader["RowStatus"]) : 0;
 
                             result.Add(recordData);
                         }
@@ -388,11 +401,11 @@ namespace FlexerApp.Contexts
         {
             string insertQuery = string.Empty;
 
-            insertQuery = string.Format("INSERT INTO LoginModel ( LoginModelId, Email, Password, LocationType, IPAddress, City, Lat, Long, sessionID, loginToken, CreatedDate ) " +
-                                        "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}')",
-                                        item.LoginModelId, item.Email, item.Password, item.LocationType, item.IPAddress, item.City, item.Lat, item.Long, item.sessionID, item.loginToken, DateTime.Now.ToString(DATE_FORMAT));
+            insertQuery = string.Format("INSERT INTO LoginModel ( Email, Password, LocationType, IPAddress, City, Lat, Long, SessionId, loginToken) " +
+                                        "VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')",
+                                        item.Email, item.Password, item.LocationType, item.IPAddress, item.City, item.Lat, item.Long, item.SessionId, item.LoginToken);
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -417,7 +430,7 @@ namespace FlexerApp.Contexts
         {
             LoginModel result = new LoginModel();
             string retrieveQuery = String.Format("SELECT * FROM LoginModel ORDER BY CreatedDate DESC LIMIT 1");
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -433,24 +446,54 @@ namespace FlexerApp.Contexts
                     {
                         if (reader.Read())
                         {
-                            result.LoginModelId = reader["LoginModelId"] != null ? reader["LoginModelId"].ToString() : string.Empty;
-                            result.Email = reader["Email"] != null ? reader["Email"].ToString() : string.Empty;
-                            result.Password = reader["Password"] != null ? reader["Password"].ToString() : string.Empty;
-                            result.LocationType = reader["LocationType"] != null ? reader["LocationType"].ToString() : string.Empty;
-                            result.IPAddress = reader["IPAddress"] != null ? reader["IPAddress"].ToString() : string.Empty;
-                            result.City = reader["City"] != null ? reader["City"].ToString() : string.Empty;
-                            result.Lat = reader["Lat"] != null ? decimal.Parse(reader["Lat"].ToString()) : 0;
-                            result.Long = reader["Long"] != null ? decimal.Parse(reader["Long"].ToString()) : 0;
-                            result.sessionID = reader["sessionID"] != null ? int.Parse(reader["sessionID"].ToString()) : 0;
-                            result.loginToken = reader["loginToken"] != null ? reader["loginToken"].ToString() : string.Empty;
-                            if (reader["CreatedDate"] != null && DateTime.TryParseExact(reader["CreatedDate"].ToString(), DATE_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
-                                result.CreatedDate = dateTimeResult;
+                            result.LoginModelId = reader["LoginModelId"] != DBNull.Value ? Convert.ToInt32(reader["LoginModelId"]) : 0;
+                            result.Email = reader["Email"] != DBNull.Value ? reader["Email"].ToString() : string.Empty;
+                            result.Password = reader["Password"] != DBNull.Value ? reader["Password"].ToString() : string.Empty;
+                            result.LocationType = reader["LocationType"] != DBNull.Value ? reader["LocationType"].ToString() : string.Empty;
+                            result.IPAddress = reader["IPAddress"] != DBNull.Value ? reader["IPAddress"].ToString() : string.Empty;
+                            result.City = reader["City"] != DBNull.Value ? reader["City"].ToString() : string.Empty;
+                            result.Lat = reader["Lat"] != DBNull.Value ? Convert.ToDecimal(reader["Lat"]) : 0;
+                            result.Long = reader["Long"] != DBNull.Value ? Convert.ToDecimal(reader["Long"]) : 0;
+                            result.SessionId = reader["SessionId"] != DBNull.Value ? Convert.ToInt32(reader["SessionId"]) : 0;
+                            result.LoginToken = reader["loginToken"] != DBNull.Value ? reader["loginToken"].ToString() : string.Empty;
+                            if (reader["CreatedDate"] != DBNull.Value)// && DateTime.TryParseExact(reader["CreatedDate"].ToString(), DATE_FORMAT, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTimeResult))
+                                result.CreatedDate = Convert.ToDateTime(reader["CreatedDate"]);// dateTimeResult;
+                            result.RowStatus = reader["RowStatus"] != DBNull.Value ? Convert.ToInt32(reader["RowStatus"]) : 0;
                         }
                     }
                     transaction.Commit();
                 }
             }
             return result;
+        }
+
+        #endregion
+
+        #region User Task Function
+
+        public void CreateTaskData(UserTaskModel item)
+        {
+            string insertQuery = string.Empty;
+
+            insertQuery = string.Format("INSERT INTO UserTaskModel ( SessionId, TaskId, TaskStatus, TaskDate ) " +
+                                        "VALUES ('{0}','{1}','{2}','{3}','{4}')",
+                                        item.SessionId, item.TaskId, item.TaskStatus, item.TaskDate);
+
+            using (var connection = PrivateConnection())
+            {
+                connection.Open();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var insertCommand = connection.CreateCommand();
+                    insertCommand.Transaction = transaction;
+                    insertCommand.CommandText = insertQuery;
+                    insertCommand.CommandType = System.Data.CommandType.Text;
+                    insertCommand.ExecuteNonQuery();
+
+                    transaction.Commit();
+                }
+            }
         }
 
         #endregion
@@ -468,7 +511,7 @@ namespace FlexerApp.Contexts
 
             string checkScript = string.Format("SELECT name FROM sqlite_master WHERE type='table' AND name='{0}' LIMIT 1", tableName);
 
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 
@@ -500,50 +543,71 @@ namespace FlexerApp.Contexts
             if (!CheckIsTableExist("LoginModel"))
             {
                 createScript = @" CREATE TABLE LoginModel
-                                  ( LoginModelId TEXT PRIMARY KEY,
-                                    Email TEXT,
-                                    Password TEXT,
-                                    LocationType TEXT,
-                                    IPAddress TEXT,
-                                    City TEXT,
-                                    Lat REAL,
-                                    Long REAL,
-                                    sessionID INT,
-                                    loginToken TEXT,
-                                    CreatedDate TEXT
+                                    ( 
+                                        LoginModelId    INTEGER  PRIMARY KEY AUTOINCREMENT,
+                                        Email           TEXT,
+                                        Password        TEXT,
+                                        LocationType    TEXT,
+                                        IPAddress       TEXT,
+                                        City            TEXT,
+                                        Lat             REAL,
+                                        Long            REAL,
+                                        SessionId       INT,
+                                        LoginToken      TEXT,
+                                        CreatedDate     DATETIME DEFAULT (CURRENT_TIMESTAMP),
+                                        RowStatus       INTEGER  DEFAULT (0) 
                                   )";
                 ExecuteNonQueryScript(createScript);
             }
 
             if (!CheckIsTableExist("KeyboardMouseLogModel"))
             {
-                createScript = @" CREATE TABLE KeyboardMouseLogModel
-                                  ( KeyboardMouseLogModelId TEXT PRIMARY KEY,
-                                    SessionID BIGINT,
-                                    ActivityName TEXT,
-                                    ActivityType TEXT,
-                                    InputKey TEXT,
-                                    KeyStrokeCount BIGINT,
-                                    MouseClickCount BIGINT,
-                                    StartTime TEXT,
-                                    EndTime TEXT,
-                                    IsSuccessSendToServer INT
-                                  )";
-
+                createScript = @"CREATE TABLE KeyboardMouseLogModel 
+                                    (
+                                        KeyboardMouseLogModelId INTEGER  PRIMARY KEY AUTOINCREMENT,
+                                        SessionId               INTEGER,
+                                        ActivityName            TEXT,
+                                        ActivityType            TEXT,
+                                        KeyStrokeCount          BIGINT,
+                                        MouseClickCount         BIGINT,
+                                        StartTime               DATETIME,
+                                        EndTime                 DATETIME,
+                                        IsSuccessSendToServer   BOOLEAN  DEFAULT False,
+                                        CreatedDate             DATETIME DEFAULT (CURRENT_TIMESTAMP),
+                                        RowStatus               INTEGER  DEFAULT (0) 
+                                    );";
                 ExecuteNonQueryScript(createScript);
             }
 
             if (!CheckIsTableExist("ScreenshotLogModel"))
             {
-                createScript = @" CREATE TABLE ScreenshotLogModel
-                                  ( ScreenshotLogModelId TEXT PRIMARY KEY,
-                                    SessionID INT,
-                                    ActivityName TEXT,
-                                    ActivityType TEXT,
-                                    Image TEXT,
-                                    CaptureScreenDate TEXT,
-                                    IsSuccessSendToServer TEXT                                    
-                                  )";
+                createScript = @"CREATE TABLE ScreenshotLogModel 
+                                    (
+                                        ScreenshotLogId       INTEGER  PRIMARY KEY AUTOINCREMENT,
+                                        SessionId             INTEGER,
+                                        ActivityName          TEXT,
+                                        ActivityType          TEXT,
+                                        Image                 TEXT,
+                                        CaptureScreenDate     DATETIME,
+                                        IsSuccessSendToServer BOOLEAN  DEFAULT False,
+                                        CreatedDate           DATETIME DEFAULT (CURRENT_TIMESTAMP),
+                                        RowStatus             INTEGER  DEFAULT (0) 
+                                    )";
+                ExecuteNonQueryScript(createScript);
+            }
+
+            if (!CheckIsTableExist("UserTaskModel"))
+            {
+                createScript = @" CREATE TABLE UserTaskModel 
+                                    (
+                                        UserTaskModelId INTEGER  PRIMARY KEY AUTOINCREMENT,
+                                        SessionId       INTEGER,
+                                        TaskId          INTEGER,
+                                        TaskStatus      TEXT,
+                                        TaskDate        DATETIME,
+                                        CreatedDate     DATETIME DEFAULT (CURRENT_TIMESTAMP),
+                                        RowStatus       INTEGER  DEFAULT (0) 
+                                    )";
                 ExecuteNonQueryScript(createScript);
             }
         }
@@ -556,7 +620,7 @@ namespace FlexerApp.Contexts
         private bool ExecuteNonQueryScript(string query)
         {
             bool isSuccess = false;
-            using (var connection = privateConnection())
+            using (var connection = PrivateConnection())
             {
                 connection.Open();
 

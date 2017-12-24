@@ -32,11 +32,11 @@ namespace FlexerApp.Controllers
         /// </summary>
         public void SendKeyLogDataToServer()
         {
-            var loginToken = _contextDB.GetLoginSession().loginToken;
+            var loginToken = _contextDB.GetLoginSession().LoginToken;
 
             var logList = _contextDB.GetLogListSendToServer();
 
-            var sessionList = logList.Select(x => x.SessionID).Distinct();
+            var sessionList = logList.Select(x => x.SessionId).Distinct();
             //WriteText("SessionList", string.Format("{0} -> {1}", sessionList.Count().ToString(), sessionList.ToArray().ToString()));
             try
             {
@@ -57,7 +57,7 @@ namespace FlexerApp.Controllers
 
                     long rowNo = 1;
                     //WriteText("logList", string.Format("{0} -> {1}", logList.Count().ToString(), logList.Select(x => x.KeyboardMouseLogModelId).ToString()));
-                    var simpleList = logList.Distinct().Where(x => x.SessionID == sessionID);
+                    var simpleList = logList.Distinct().Where(x => x.SessionId == sessionID);
                     foreach (var detailAct in simpleList)
                     {
                         requestBody.Append("{");
@@ -82,7 +82,7 @@ namespace FlexerApp.Controllers
 
                     if (response.StatusCode.ToString() == "OK")
                     {
-                        foreach (var log in logList.Where(x => x.SessionID == sessionID))
+                        foreach (var log in logList.Where(x => x.SessionId == sessionID))
                         {
                             log.IsSuccessSendToServer = true;
                             _contextDB.UpdateData(log);
@@ -104,9 +104,9 @@ namespace FlexerApp.Controllers
         {
             var imageLogList = _contextDB.GetScreenshotLogListSendToServer();
 
-            var loginToken = _contextDB.GetLoginSession().loginToken;
+            var loginToken = _contextDB.GetLoginSession().LoginToken;
 
-            var sessionList = imageLogList.Select(x => x.SessionID).Distinct();
+            var sessionList = imageLogList.Select(x => x.SessionId).Distinct();
 
             foreach (var sessionID in sessionList)
             {
@@ -115,7 +115,7 @@ namespace FlexerApp.Controllers
                 RestClient client = null;
                 RestRequest request = null;
 
-                var simpleList = imageLogList.Distinct().Where(x => x.SessionID == sessionID);
+                var simpleList = imageLogList.Distinct().Where(x => x.SessionId == sessionID);
 
                 foreach (var item in simpleList)
                 {
@@ -184,8 +184,8 @@ namespace FlexerApp.Controllers
                 if (isSuccessLogin)
                 {
                     var responseList = response.Content.Split(',').ToList();
-                    login.sessionID = Convert.ToInt32(responseList[1].Split(':')[1]);
-                    login.loginToken = responseList[3].Split(':')[1].Substring(1, responseList[3].Split(':')[1].Length - 3);
+                    login.SessionId = Convert.ToInt32(responseList[1].Split(':')[1]);
+                    login.LoginToken = responseList[3].Split(':')[1].Substring(1, responseList[3].Split(':')[1].Length - 3);
 
                     _contextDB.CreateLoginSession(login);
                 }
@@ -203,7 +203,7 @@ namespace FlexerApp.Controllers
         /// </summary>
         public void LogoutFromServer()
         {
-            var sessionID = _contextDB.GetLoginSession().sessionID;
+            var sessionID = _contextDB.GetLoginSession().SessionId;
             bool isSuccessLogout = false;
             try
             {
@@ -225,6 +225,22 @@ namespace FlexerApp.Controllers
             {
                 throw ex;
             }
+        }
+
+        /// <summary>
+        /// Gets the task from server.
+        /// </summary>
+        public void GetTaskFromServer()
+        {
+            
+        }
+
+        /// <summary>
+        /// Proposes the task to server.
+        /// </summary>
+        public void ProposeTaskToServer()
+        {
+
         }
 
         /// <summary>

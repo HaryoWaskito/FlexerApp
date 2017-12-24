@@ -1,4 +1,6 @@
-﻿namespace FlexerApp
+﻿using System.Windows.Forms;
+
+namespace FlexerApp
 {
     partial class FlexerApp
     {
@@ -37,27 +39,26 @@
             this.EmailCaptionControl = new System.Windows.Forms.Label();
             this.PasswordCaptionControl = new System.Windows.Forms.Label();
             this.ErrorMessageControl = new System.Windows.Forms.Label();
-            this.LoginControl = new System.Windows.Forms.Button();
             this.ExitControl = new System.Windows.Forms.Button();
             this.ProgressCircleControl = new CircularProgressBar.CircularProgressBar();
-            this.bgWorker = new System.ComponentModel.BackgroundWorker();
+            this.LoginControl = new NoFocusButton();
             this.SuspendLayout();
             // 
             // PasswordControl
             // 
-            this.PasswordControl.Font = new System.Drawing.Font("Arial", 12F);
+            this.PasswordControl.Font = new System.Drawing.Font("Arial", 10F);
             this.PasswordControl.Location = new System.Drawing.Point(12, 164);
             this.PasswordControl.Name = "PasswordControl";
-            this.PasswordControl.Size = new System.Drawing.Size(294, 26);
+            this.PasswordControl.Size = new System.Drawing.Size(282, 23);
             this.PasswordControl.TabIndex = 1;
             this.PasswordControl.UseSystemPasswordChar = true;
             // 
             // EmailControl
             // 
-            this.EmailControl.Font = new System.Drawing.Font("Arial", 12F);
+            this.EmailControl.Font = new System.Drawing.Font("Arial", 10F);
             this.EmailControl.Location = new System.Drawing.Point(12, 101);
             this.EmailControl.Name = "EmailControl";
-            this.EmailControl.Size = new System.Drawing.Size(294, 26);
+            this.EmailControl.Size = new System.Drawing.Size(282, 23);
             this.EmailControl.TabIndex = 0;
             // 
             // label3
@@ -66,7 +67,7 @@
             this.label3.BackColor = System.Drawing.Color.Transparent;
             this.label3.Font = new System.Drawing.Font("Copperplate Gothic Bold", 12F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.GhostWhite;
-            this.label3.Location = new System.Drawing.Point(199, 9);
+            this.label3.Location = new System.Drawing.Point(187, 9);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(107, 18);
             this.label3.TabIndex = 6;
@@ -81,11 +82,11 @@
             // 
             this.EmailCaptionControl.AutoSize = true;
             this.EmailCaptionControl.BackColor = System.Drawing.Color.Transparent;
-            this.EmailCaptionControl.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.EmailCaptionControl.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.EmailCaptionControl.ForeColor = System.Drawing.Color.Transparent;
             this.EmailCaptionControl.Location = new System.Drawing.Point(14, 80);
             this.EmailCaptionControl.Name = "EmailCaptionControl";
-            this.EmailCaptionControl.Size = new System.Drawing.Size(57, 19);
+            this.EmailCaptionControl.Size = new System.Drawing.Size(50, 18);
             this.EmailCaptionControl.TabIndex = 7;
             this.EmailCaptionControl.Text = "Email:";
             // 
@@ -93,39 +94,29 @@
             // 
             this.PasswordCaptionControl.AutoSize = true;
             this.PasswordCaptionControl.BackColor = System.Drawing.Color.Transparent;
-            this.PasswordCaptionControl.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold);
+            this.PasswordCaptionControl.Font = new System.Drawing.Font("Arial", 11F, System.Drawing.FontStyle.Bold);
             this.PasswordCaptionControl.ForeColor = System.Drawing.Color.SeaShell;
             this.PasswordCaptionControl.Location = new System.Drawing.Point(14, 143);
             this.PasswordCaptionControl.Name = "PasswordCaptionControl";
-            this.PasswordCaptionControl.Size = new System.Drawing.Size(92, 19);
+            this.PasswordCaptionControl.Size = new System.Drawing.Size(81, 18);
             this.PasswordCaptionControl.TabIndex = 8;
             this.PasswordCaptionControl.Text = "Password:";
             // 
             // ErrorMessageControl
             // 
             this.ErrorMessageControl.AutoSize = true;
+            this.ErrorMessageControl.BackColor = System.Drawing.Color.Transparent;
             this.ErrorMessageControl.ForeColor = System.Drawing.Color.Red;
-            this.ErrorMessageControl.Location = new System.Drawing.Point(156, 55);
+            this.ErrorMessageControl.Location = new System.Drawing.Point(219, 86);
             this.ErrorMessageControl.Name = "ErrorMessageControl";
             this.ErrorMessageControl.Size = new System.Drawing.Size(0, 13);
             this.ErrorMessageControl.TabIndex = 9;
-            // 
-            // LoginControl
-            // 
-            this.LoginControl.BackColor = System.Drawing.Color.Thistle;
-            this.LoginControl.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.LoginControl.Font = new System.Drawing.Font("Comic Sans MS", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LoginControl.Location = new System.Drawing.Point(12, 213);
-            this.LoginControl.Name = "LoginControl";
-            this.LoginControl.Size = new System.Drawing.Size(110, 45);
-            this.LoginControl.TabIndex = 10;
-            this.LoginControl.Text = "Login";
-            this.LoginControl.UseVisualStyleBackColor = false;
-            this.LoginControl.Click += new System.EventHandler(this.LoginControl_Click);
+            this.ErrorMessageControl.Visible = false;
             // 
             // ExitControl
             // 
-            this.ExitControl.BackColor = System.Drawing.Color.Thistle;
+            this.ExitControl.BackColor = System.Drawing.Color.Transparent;
+            this.ExitControl.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.ExitControl.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.ExitControl.Font = new System.Drawing.Font("Comic Sans MS", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ExitControl.Location = new System.Drawing.Point(184, 213);
@@ -139,15 +130,15 @@
             // ProgressCircleControl
             // 
             this.ProgressCircleControl.AnimationFunction = WinFormAnimation.KnownAnimationFunctions.Liner;
-            this.ProgressCircleControl.AnimationSpeed = 500;
+            this.ProgressCircleControl.AnimationSpeed = 5000;
             this.ProgressCircleControl.BackColor = System.Drawing.Color.Transparent;
             this.ProgressCircleControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 72F, System.Drawing.FontStyle.Bold);
             this.ProgressCircleControl.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ProgressCircleControl.InnerColor = System.Drawing.Color.Transparent;
             this.ProgressCircleControl.InnerMargin = 2;
             this.ProgressCircleControl.InnerWidth = -1;
-            this.ProgressCircleControl.Location = new System.Drawing.Point(128, 208);
-            this.ProgressCircleControl.MarqueeAnimationSpeed = 2000;
+            this.ProgressCircleControl.Location = new System.Drawing.Point(128, 206);
+            this.ProgressCircleControl.MarqueeAnimationSpeed = 1000;
             this.ProgressCircleControl.Name = "ProgressCircleControl";
             this.ProgressCircleControl.OuterColor = System.Drawing.Color.Gray;
             this.ProgressCircleControl.OuterMargin = -25;
@@ -166,9 +157,21 @@
             this.ProgressCircleControl.SuperscriptText = "";
             this.ProgressCircleControl.TabIndex = 12;
             this.ProgressCircleControl.TextMargin = new System.Windows.Forms.Padding(8, 8, 0, 0);
-            this.ProgressCircleControl.Value = 68;
+            this.ProgressCircleControl.Value = 65;
             this.ProgressCircleControl.Visible = false;
-
+            // 
+            // LoginControl
+            // 
+            this.LoginControl.BackColor = System.Drawing.Color.Transparent;
+            this.LoginControl.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.LoginControl.Font = new System.Drawing.Font("Comic Sans MS", 9.75F, System.Drawing.FontStyle.Bold);
+            this.LoginControl.Location = new System.Drawing.Point(12, 213);
+            this.LoginControl.Name = "LoginControl";
+            this.LoginControl.Size = new System.Drawing.Size(110, 45);
+            this.LoginControl.TabIndex = 13;
+            this.LoginControl.Text = "Login";
+            this.LoginControl.UseVisualStyleBackColor = false;
+            this.LoginControl.Click += new System.EventHandler(this.LoginControl_Click);
             // 
             // FlexerApp
             // 
@@ -176,11 +179,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.BackgroundImage = global::FlexerApp.Properties.Resources.Setan_Blue;
-            this.ClientSize = new System.Drawing.Size(318, 268);
+            this.CancelButton = this.ExitControl;
+            this.ClientSize = new System.Drawing.Size(306, 268);
             this.ControlBox = false;
+            this.Controls.Add(this.LoginControl);
             this.Controls.Add(this.ProgressCircleControl);
             this.Controls.Add(this.ExitControl);
-            this.Controls.Add(this.LoginControl);
             this.Controls.Add(this.ErrorMessageControl);
             this.Controls.Add(this.PasswordCaptionControl);
             this.Controls.Add(this.EmailCaptionControl);
@@ -205,10 +209,17 @@
         private System.Windows.Forms.Label EmailCaptionControl;
         private System.Windows.Forms.Label PasswordCaptionControl;
         private System.Windows.Forms.Label ErrorMessageControl;
-        private System.Windows.Forms.Button LoginControl;
         private System.Windows.Forms.Button ExitControl;
         private CircularProgressBar.CircularProgressBar ProgressCircleControl;
-        private System.ComponentModel.BackgroundWorker bgWorker;
+        private FlexerApp.NoFocusButton LoginControl;
+
+        private class NoFocusButton : System.Windows.Forms.Button
+        {
+            public NoFocusButton() : base()
+            {
+                this.SetStyle(ControlStyles.Selectable, false);
+            }
+        }
     }
 }
 
